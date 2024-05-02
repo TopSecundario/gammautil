@@ -88,4 +88,37 @@ public class TestStrings {
         err.println(assertThrows(IllegalArgumentException.class, () -> Strings.transEscape("\\u519")));
         err.println(assertThrows(IllegalArgumentException.class, () -> Strings.transEscape("#{U+110000}WenHua")));
     }
+
+    @Test
+    public void test_splitFileNameExt() {
+        out.println(new FileNameExtInfo("a", "txt", '.'));
+
+        assertEquals(new FileNameExtInfo(null, null, '\0'), Strings.splitFileNameExt(null));
+        assertEquals(new FileNameExtInfo("", "", '\0'), Strings.splitFileNameExt(""));
+
+        assertEquals(new FileNameExtInfo("a", "txt", '.'), Strings.splitFileNameExt("a.txt"));
+        assertEquals(new FileNameExtInfo("a", "", '\0'), Strings.splitFileNameExt("a"));
+        assertEquals(new FileNameExtInfo("", "txt", '.'), Strings.splitFileNameExt(".txt"));
+        assertEquals(new FileNameExtInfo("a", "", '.'), Strings.splitFileNameExt("a."));
+
+        assertEquals(new FileNameExtInfo("test", "c", '_'), Strings.splitFileNameExt("test_c"));
+        assertEquals(new FileNameExtInfo("test_a", "c", '_'), Strings.splitFileNameExt("test_a_c"));
+        assertEquals(new FileNameExtInfo("", "txt", '_'), Strings.splitFileNameExt("_txt"));
+        assertEquals(new FileNameExtInfo("a", "", '_'), Strings.splitFileNameExt("a_"));
+
+        assertEquals(new FileNameExtInfo("test.a", "c", '.'), Strings.splitFileNameExt("test.a.c"));
+    }
+
+    @Test
+    public void test_getFileNameBase() {
+        assertEquals("a", Strings.getFileNameBase("a.txt"));
+        assertEquals("a_txt", Strings.getFileNameBase("a_txt.bak"));
+    }
+
+    @Test
+    public void test_getFileNameExt() {
+        assertEquals("txt", Strings.getFileNameExt("a.txt"));
+        assertEquals("txt", Strings.getFileNameExt("a_txt"));
+        assertEquals("bak", Strings.getFileNameExt("a_txt.bak"));
+    }
 }

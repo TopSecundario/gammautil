@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class Strings {
+    private Strings() {}
 
     private static final Map<Character, Character> JAVA_ESCAPE_CHAR_MAP = new HashMap<>();
     static {
@@ -225,5 +226,32 @@ public final class Strings {
         }
 
         return sb.toString();
+    }
+
+    public static FileNameExtInfo splitFileNameExt(String fileName) {
+        if (ObjectS.isNull(fileName))
+            return new FileNameExtInfo(null, null, '\0');
+        if (fileName.isEmpty())
+            return new FileNameExtInfo("", "", '\0');
+
+        int idx0 = fileName.lastIndexOf('.');
+        if (idx0 >= 0) {
+            return new FileNameExtInfo(fileName.substring(0, idx0), fileName.substring(idx0 + 1), '.');
+        } else {
+            int idx1 = fileName.lastIndexOf('_');
+            if (idx1 >= 0) {
+                return new FileNameExtInfo(fileName.substring(0, idx1), fileName.substring(idx1 + 1), '_');
+            } else {
+                return new FileNameExtInfo(fileName, "", '\0');
+            }
+        }
+    }
+
+    public static String getFileNameBase(String fileName) {
+        return splitFileNameExt(fileName).base();
+    }
+
+    public static String getFileNameExt(String fileName) {
+        return splitFileNameExt(fileName).ext();
     }
 }
