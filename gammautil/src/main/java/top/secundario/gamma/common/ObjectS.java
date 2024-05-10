@@ -11,4 +11,21 @@ public class ObjectS {
     public static boolean isNotNull(Object obj) {
         return  null != obj;
     }
+
+    public static boolean classOf(Object obj, Class clz) {
+        return  obj.getClass() == clz;
+    }
+
+    public static <T> T cast(Object obj, Class<T> clzT) {
+        return (T) obj;
+    }
+
+    public static <T, V> boolean classOf(T objT, Class<V> clzV, Ref<V> refV) {
+        if (classOf(objT, clzV)) {
+            refV.set(cast(objT, clzV));
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
