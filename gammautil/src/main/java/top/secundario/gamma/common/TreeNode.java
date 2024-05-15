@@ -70,7 +70,14 @@ public class TreeNode<T> {
     }
 
     public TreeVisitIndicator controllableWalk(TreeControllableVisitor<? super T> visitor) {
-        return _controllableWalk(this, visitor);
+        TreeVisitor<T, Object> wrappedVisitor = (_data, _tvCtx) -> {return visitor.visit(_data);};
+
+        TreeVisitContext<T, Object> tvCtx = new TreeVisitContext<>();
+        tvCtx.incDepth();
+        TreeVisitIndicator indicator = _walk(this, wrappedVisitor, tvCtx);
+        tvCtx.decDepth();
+
+        return indicator;
     }
 
     private static <T> void _simpleWalk(TreeNode<T> node, TreeSimpleVisitor<? super T> visitor) {
@@ -85,18 +92,23 @@ public class TreeNode<T> {
         }
     }
 
-    private static <T> TreeVisitIndicator _controllableWalk(TreeNode<T> node, TreeControllableVisitor<? super T> visitor) {
+    private static <T, R> TreeVisitIndicator _walk(TreeNode<T> node, TreeVisitor<T, R> visitor, TreeVisitContext<T, R> tvCtx) {
         /* visit itself */
-        TreeVisitIndicator indicator = visitor.visit(node.data);
+        tvCtx.incStep();
+        TreeVisitIndicator indicator = visitor.visit(node.data, tvCtx);
         if (TreeVisitIndicator.TERMINATE == indicator) {
             return indicator;            /* TERMINATE */
         }
 
         if (TreeVisitIndicator.SKIP_SUB_TREE != indicator) {
             /* visit children */
+            R dataToChildren = tvCtx.getDataToChildren();
             TreeNode<T> child = node.firstChild;
             while (null != child) {
-                TreeVisitIndicator ind = _controllableWalk(child, visitor);      /* visit a child */
+                tvCtx.setDataFromParent(dataToChildren);
+                tvCtx.incDepth();
+                TreeVisitIndicator ind = _walk(child, visitor, tvCtx);      /* visit a child */
+                tvCtx.decDepth();
                 if (TreeVisitIndicator.TERMINATE == ind) {
                     return ind;                  /* TERMINATE */
                 }

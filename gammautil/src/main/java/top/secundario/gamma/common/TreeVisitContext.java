@@ -2,13 +2,15 @@ package top.secundario.gamma.common;
 
 public class TreeVisitContext<T, R> {
     private TreeNode<T> node;
-    private R result;
+    private R dataFromParent;
+    private R dataToChildren;
     private int depth;
     private int step;
 
     public TreeVisitContext() {
         node = null;
-        result = null;
+        dataFromParent = null;
+        dataToChildren = null;
         depth = 0;
         step = 0;
     }
@@ -19,14 +21,6 @@ public class TreeVisitContext<T, R> {
 
     public void setNode(TreeNode<T> node) {
         this.node = node;
-    }
-
-    public R getResult() {
-        return result;
-    }
-
-    public void setResult(R result) {
-        this.result = result;
     }
 
     public int getDepth() {
@@ -55,5 +49,21 @@ public class TreeVisitContext<T, R> {
 
     public void incStep() {
         ++step;
+    }
+
+    public R getDataFromParent() {
+        return dataFromParent;
+    }
+
+    public void setDataFromParent(R dataFromParent) {
+        this.dataFromParent = dataFromParent;
+    }
+
+    public R getDataToChildren() {
+        return dataToChildren;
+    }
+
+    public void setDataToChildren(R dataToChildren) {
+        this.dataToChildren = dataToChildren;
     }
 }
