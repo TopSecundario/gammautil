@@ -4,6 +4,7 @@ import org.junit.Test;
 import top.secundario.gamma.gui.test.TestDialog;
 
 import javax.swing.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertTrue;
@@ -16,8 +17,12 @@ public class TestComponents {
             return new JLabel("Move this dialog to screen center.");
         };
         String[] checkList = new String[]{"Is this dialog in the screen center?"};
+        Consumer<TestDialog> dbv = (_testDialog) -> {
+            _testDialog.pack();
+            Components.moveToScreenCenter(_testDialog);
+        };
 
-        TestDialog testDialog = TestDialog.display("Test: moveToScreenCenter", ftas, checkList, Components::moveToScreenCenter);
+        TestDialog testDialog = TestDialog.display("Test: moveToScreenCenter", ftas, checkList, dbv);
         assertTrue(testDialog.assertPass());
     }
 }

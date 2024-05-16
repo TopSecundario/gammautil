@@ -34,7 +34,6 @@ public class TestDialog extends JDialog implements WindowListener {
                 } else {
                     testDialog = new TestDialog(title, null, checkList);
                 }
-                testDialog.pack();
                 if (null != doBeforeVisible) {
                     doBeforeVisible.accept(testDialog);
                 }
@@ -73,11 +72,14 @@ public class TestDialog extends JDialog implements WindowListener {
         verifyButton.addActionListener(this::onVerifyButtonClicked);
         btnWrap.add(verifyButton);
 
+        JPanel claBtnWrap = new JPanel(new BorderLayout());
+        claBtnWrap.add(checkListArea, BorderLayout.NORTH);
+        claBtnWrap.add(btnWrap, BorderLayout.SOUTH);
+
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
-        contentPane.add(ftaWrap, BorderLayout.NORTH);
-        contentPane.add(checkListArea, BorderLayout.CENTER);
-        contentPane.add(btnWrap, BorderLayout.SOUTH);
+        contentPane.add(ftaWrap, BorderLayout.CENTER);
+        contentPane.add(claBtnWrap, BorderLayout.SOUTH);
 
         addWindowListener(this);
     }

@@ -94,6 +94,7 @@ public class TreeNode<T> {
 
     private static <T, R> TreeVisitIndicator _walk(TreeNode<T> node, TreeVisitor<T, R> visitor, TreeVisitContext<T, R> tvCtx) {
         /* visit itself */
+        tvCtx.setNode(node);
         tvCtx.incStep();
         TreeVisitIndicator indicator = visitor.visit(node.data, tvCtx);
         if (TreeVisitIndicator.TERMINATE == indicator) {
