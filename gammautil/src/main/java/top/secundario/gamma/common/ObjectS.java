@@ -12,6 +12,11 @@ public class ObjectS {
         return  null != obj;
     }
 
+    public static void reqNotNull(Object obj) {
+        if (isNull(obj))
+            throw new NullPointerException("reqNotNull");
+    }
+
     public static boolean classOf(Object obj, Class clz) {
         return  obj.getClass() == clz;
     }
