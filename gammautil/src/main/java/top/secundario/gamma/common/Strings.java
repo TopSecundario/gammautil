@@ -254,4 +254,19 @@ public final class Strings {
     public static String getFileNameExt(String fileName) {
         return splitFileNameExt(fileName).ext();
     }
+
+    public static int substringCount(String str, String ss) {
+        if (ObjectS.isNull(str) || ObjectS.isNull(ss))
+            return 0;
+
+        int count = 0;
+        int idx = 0;
+        idx = str.indexOf(ss, idx);
+        while (idx >= 0) {
+            ++count;
+            idx = str.indexOf(ss, idx + ss.length());
+        }
+
+        return count;
+    }
 }

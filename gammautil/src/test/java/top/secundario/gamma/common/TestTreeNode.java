@@ -2,10 +2,12 @@ package top.secundario.gamma.common;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.*;
 
 public class TestTreeNode {
     private TreeNode<String> createSolarSystem() {
@@ -225,5 +227,161 @@ public class TestTreeNode {
         rootNode.controllableWalk(tcvSkipSibling);
 
         assertArrayEquals(expectedSeq, walkedSeq.toArray());
+    }
+
+
+    record NodeInfo<T>(TreeNode<T> node, int step, int depth) {
+        public String toString() {
+            return String.format("('%s', %d, %d)", node.getData(), step, depth);
+        }
+    }
+
+    private List<NodeInfo<String>> createWorldRegionDivision() throws IOException {
+        List<NodeInfo<String>> nodeInfoList = new ArrayList<>();
+
+        Path path = Path.of("src/test/resources/world.txt");
+        try (var lines = Files.lines(path)) {
+            int step = 0;
+            int last_h = -1;
+            TreeNode<String> lastNode = null;
+
+            Iterator<String> iterator = lines.iterator();
+            while (iterator.hasNext()) {
+                String line = iterator.next();
+
+                int h = Strings.substringCount(line, "|---");
+                if (0 == h) {
+                    /* root */
+                    TreeNode<String> rootNode = new TreeNode<>(line);
+                    ++step;
+                    nodeInfoList.add(new NodeInfo<>(rootNode, step, h + 1));
+                    last_h = h;
+                    lastNode = rootNode;
+                } else {
+                    /* NOT root */
+                    if (h == last_h) {
+                        /* sibling of last node */
+                        TreeNode<String> currentNode = lastNode.addNextData(line);
+                        ++step;
+                        nodeInfoList.add(new NodeInfo<>(currentNode, step, h + 1));
+                        lastNode = currentNode;
+                    } else if (h - last_h == 1) {
+                        /* new branch */
+                        TreeNode<String> currentNode = lastNode.addFirstChildData(line);
+                        ++step;
+                        nodeInfoList.add(new NodeInfo<>(currentNode, step, h + 1));
+                        last_h = h;
+                        lastNode = currentNode;
+                    } else if (h < last_h) {
+                        /* ascend against last node */
+                        TreeNode<String> parentNode = lastNode.ascend(last_h - h + 1);
+                        TreeNode<String> currentNode = parentNode.addChildData(line);
+                        ++step;
+                        nodeInfoList.add(new NodeInfo<>(currentNode, step, h + 1));
+                        last_h = h;
+                        lastNode = currentNode;
+                    } else {
+                        System.err.println("Invalid line for a tree branch: " + line);
+                    }
+                }
+            }
+        }
+
+        return nodeInfoList;
+    }
+
+    @Test
+    public void test_walk_base() throws IOException {
+        final List<NodeInfo<String>> nodeInfoList = createWorldRegionDivision();
+        final Ref<Integer> sn = new Ref<>(0);
+        TreeNode<String> root = nodeInfoList.get(0).node;
+
+        TreeVisitor<String, Object> visitor = (_data, _tvCtx) -> {
+            int _sn = sn.get();
+            NodeInfo<String> expectedNodeInfo = nodeInfoList.get(_sn);
+            ++_sn;
+            sn.set(_sn);
+
+            assertSame(expectedNodeInfo.node, _tvCtx.getNode());
+            assertEquals(expectedNodeInfo.node.getData(), _data);
+            assertEquals(expectedNodeInfo.step, _tvCtx.getStep());
+            assertEquals(expectedNodeInfo.depth, _tvCtx.getDepth());
+
+            return TreeVisitIndicator.CONTINUE;
+        };
+
+        root.walk(visitor, null);
+    }
+
+    @Test
+    public void test_walk_dataPassing() {
+        /*
+        米家
+        |---景茂·雍水岸
+        |---|---虚拟房
+        |---|---|---全开模拟窗
+        |---|---|---中枢网关
+        |---|---|---灯泡
+        |---|---主卧
+        |---|---|---温湿度计
+        |---|---|---电小酷智能插座
+        |---|---未分配房间
+        |---|---|---空气净化器
+        |---|---|---无线路由器
+        |---马鞍村老家
+        |---|---魏雅文卧室
+        |---|---|---全效空气净化器
+         */
+        TreeNode<String> root = new TreeNode<>("米家");
+
+        TreeNode<String> jm = root.addFirstChildData("景茂·雍水岸");
+
+        TreeNode<String> xnf = jm.addChildData("虚拟房");
+
+        TreeNode<String> qkmnc = xnf.addFirstChildData("全开模拟窗");
+        qkmnc.addNextData("中枢网关").addNextData("灯泡");
+
+        TreeNode<String> zw = jm.addChildData("主卧");
+        zw.addChildData("温湿度计");
+        zw.addChildData("电小酷智能插座");
+
+        TreeNode<String> wfpfj = zw.addNextData("未分配房间");
+
+        wfpfj.addFirstChildData("空气净化器");
+        wfpfj.addChildData("无线路由器");
+
+        TreeNode<String> mac = root.addChildData("马鞍村老家");
+        mac.addChildData("魏雅文卧室").addChildData("全效空气净化器");
+
+
+        final Map<String, Object> expectedDataPassingMap = new HashMap<>();
+
+        TreeVisitContext<String, Object> tvCtx = new TreeVisitContext<>();
+
+        Object dataPassToRoot = new Object();
+        tvCtx.setDataFromParent(dataPassToRoot);
+        expectedDataPassingMap.put("_ROOT_", dataPassToRoot);
+
+        TreeVisitor<String, Object> visitor = (_data, _tvCtx) -> {
+            TreeNode<String> _node = _tvCtx.getNode();
+            if (_node.isRoot()) {
+                assertSame(expectedDataPassingMap.get("_ROOT_"), _tvCtx.getDataFromParent());
+                Object toChildren = new Object();
+                _tvCtx.setDataToChildren(toChildren);
+                expectedDataPassingMap.put(_data, toChildren);
+            } else if (_node.isLeaf()) {
+                String parent = _node.getParentData();
+                assertSame(expectedDataPassingMap.get(parent), _tvCtx.getDataFromParent());
+            } else {
+                String parent = _node.getParentData();
+                assertSame(expectedDataPassingMap.get(parent), _tvCtx.getDataFromParent());
+                Object toChildren = new Object();
+                _tvCtx.setDataToChildren(toChildren);
+                expectedDataPassingMap.put(_data, toChildren);
+            }
+            return TreeVisitIndicator.CONTINUE;
+        };
+
+        root.walk(visitor, tvCtx);
     }
 }

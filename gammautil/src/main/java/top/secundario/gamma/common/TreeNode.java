@@ -1,5 +1,7 @@
 package top.secundario.gamma.common;
 
+import java.util.function.Predicate;
+
 public class TreeNode<T> {
     private T data;
 
@@ -35,8 +37,28 @@ public class TreeNode<T> {
         return (V) data;
     }
 
+    public TreeNode<T> addChildData(T childData) {
+        return  new TreeNode<>(childData, this);
+    }
+
+    public TreeNode<T> addFirstChildData(T childData) {
+        TreeNode<T> newNode = new TreeNode<>(childData);
+        newNode.linkFirstChild(this);
+        return newNode;
+    }
+
+    public TreeNode<T> addNextData(T nextData) throws IllegalArgumentException {
+        TreeNode<T> newNode = new TreeNode<>(nextData);
+        newNode.linkAfter(this);
+        return newNode;
+    }
+
     public TreeNode<T> getParent() {
         return parent;
+    }
+
+    public T getParentData() {
+        return parent.data;
     }
 
     public TreeNode<T> getFirstChild() {
@@ -65,6 +87,14 @@ public class TreeNode<T> {
         return ObjectS.isNull(parent);
     }
 
+    public boolean isLeaf() {
+        return ObjectS.isNull(firstChild);
+    }
+
+    public boolean isLeaf(Predicate<? super T> predicate) {
+        return predicate.test(data);
+    }
+
     public void simpleWalk(TreeSimpleVisitor<? super T> visitor) {
         _simpleWalk(this, visitor);
     }
@@ -75,6 +105,18 @@ public class TreeNode<T> {
         TreeVisitContext<T, Object> tvCtx = new TreeVisitContext<>();
         tvCtx.incDepth();
         TreeVisitIndicator indicator = _walk(this, wrappedVisitor, tvCtx);
+        tvCtx.decDepth();
+
+        return indicator;
+    }
+
+    public <R> TreeVisitIndicator walk(TreeVisitor<T, R> visitor, TreeVisitContext<T, R> tvCtx) {
+        if (ObjectS.isNull(tvCtx)) {
+            tvCtx = new TreeVisitContext<>();
+        }
+
+        tvCtx.incDepth();
+        TreeVisitIndicator indicator = _walk(this, visitor, tvCtx);
         tvCtx.decDepth();
 
         return indicator;
@@ -123,6 +165,16 @@ public class TreeNode<T> {
         return indicator;
     }
 
+    public TreeNode<T> ascend(int nHierarchy) {
+        TreeNode<T> current = this;
+        for (int i = 0 ; i < nHierarchy ; ++i) {
+            current = current.parent;
+            if (ObjectS.isNull(current))
+                break;
+        }
+        return current;
+    }
+
     protected void link(TreeNode<T> parent) {
         this.parent = parent;
         this.firstChild = null;
@@ -135,6 +187,33 @@ public class TreeNode<T> {
             parent.firstChild = this;
             this.previous = null;
         }
+        this.next = null;
+    }
+
+    protected void linkFirstChild(TreeNode<T> parent) {
+        this.parent = parent;
+        this.firstChild = null;
+        this.previous = null;
+
+        if (ObjectS.isNotNull(parent.firstChild)) {
+            parent.firstChild.previous = this;
+            this.next = parent.firstChild;
+        } else {
+            this.next = null;
+        }
+        parent.firstChild = this;
+    }
+
+    protected void linkAfter(TreeNode<T> previousNode) throws IllegalArgumentException {
+        if (previousNode.isRoot())
+            throw  new IllegalArgumentException("Can't link a node after Tree's root!");
+
+        this.parent = previousNode.parent;
+        this.firstChild = null;
+
+        this.previous = previousNode;
+        previousNode.next = this;
+
         this.next = null;
     }
 

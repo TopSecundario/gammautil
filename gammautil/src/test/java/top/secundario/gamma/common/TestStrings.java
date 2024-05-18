@@ -121,4 +121,12 @@ public class TestStrings {
         assertEquals("txt", Strings.getFileNameExt("a_txt"));
         assertEquals("bak", Strings.getFileNameExt("a_txt.bak"));
     }
+
+    @Test
+    public void test_substringCount() {
+        assertEquals(0, Strings.substringCount("World", "|---"));
+        assertEquals(1, Strings.substringCount("|---continents", "|---"));
+        assertEquals(3, Strings.substringCount("|---|---|---四川省", "|---"));
+        assertEquals(4, Strings.substringCount("|---|---|---|---九龍", "|---"));
+    }
 }
