@@ -384,4 +384,46 @@ public class TestTreeNode {
 
         root.walk(visitor, tvCtx);
     }
+
+    @Test
+    public void test_walk_postVisit() throws IOException {
+        TreeNode<String> rootNode = createSolarSystem();
+        StringBuilder sb = new StringBuilder();
+
+        TreeVisitContext<String, StringBuilder> tvCtx = new TreeVisitContext<>();
+        tvCtx.setDataFromParent(sb);
+
+        TreeVisitor<String, StringBuilder> visitor = (_data, _tvCtx) -> {
+            TreeNode<String> _node = _tvCtx.getNode();
+            StringBuilder _sb = _tvCtx.getDataFromParent();
+            if (! _node.isLeaf()) {
+                _sb.append("{\"" + _data + "\" : [");
+            } else {  /* leaf node */
+                _sb.append('"').append(_data).append('"');
+                if (ObjectS.isNotNull(_node.getNext())) {
+                    _sb.append(", ");
+                }
+            }
+            _tvCtx.setDataToChildren(_sb);
+            return TreeVisitIndicator.CONTINUE;
+        };
+
+        TreePostVisitor<String, StringBuilder> postVisitor = (_data, _tpvCtx) -> {
+            TreeNode<String> _node = _tpvCtx.getNode();
+            StringBuilder _sb = _tpvCtx.getDataFromParent();
+            if (! _node.isLeaf()) {
+                _sb.append("]}");
+                if (ObjectS.isNotNull(_node.getNext())) {
+                    _sb.append(", ");
+                }
+            }
+            return TreeVisitIndicator.AS_PRE_VISIT;
+        };
+
+        rootNode.walk(visitor, tvCtx, postVisitor);
+
+        Path path = Path.of("src/test/resources/solar_system.json");
+        String expectedJSON = Files.readString(path);
+        assertEquals(expectedJSON, sb.toString());
+    }
 }

@@ -104,19 +104,24 @@ public class TreeNode<T> {
 
         TreeVisitContext<T, Object> tvCtx = new TreeVisitContext<>();
         tvCtx.incDepth();
-        TreeVisitIndicator indicator = _walk(this, wrappedVisitor, tvCtx);
+        TreeVisitIndicator indicator = _walk(this, wrappedVisitor, tvCtx,
+                (_data, _tpvCtx) -> {return TreeVisitIndicator.AS_PRE_VISIT;}, new TreePostVisitContext<>());
         tvCtx.decDepth();
 
         return indicator;
     }
 
     public <R> TreeVisitIndicator walk(TreeVisitor<T, R> visitor, TreeVisitContext<T, R> tvCtx) {
+        return walk(visitor, tvCtx, (_data, _tpvCtx) -> {return TreeVisitIndicator.AS_PRE_VISIT;});
+    }
+
+    public <R> TreeVisitIndicator walk(TreeVisitor<T, R> visitor, TreeVisitContext<T, R> tvCtx, TreePostVisitor<T, R> postVisitor) {
         if (ObjectS.isNull(tvCtx)) {
             tvCtx = new TreeVisitContext<>();
         }
 
         tvCtx.incDepth();
-        TreeVisitIndicator indicator = _walk(this, visitor, tvCtx);
+        TreeVisitIndicator indicator = _walk(this, visitor, tvCtx, postVisitor, new TreePostVisitContext<>());
         tvCtx.decDepth();
 
         return indicator;
@@ -134,10 +139,18 @@ public class TreeNode<T> {
         }
     }
 
-    private static <T, R> TreeVisitIndicator _walk(TreeNode<T> node, TreeVisitor<T, R> visitor, TreeVisitContext<T, R> tvCtx) {
+    private static <T, R> TreeVisitIndicator _walk(TreeNode<T> node,
+                                                   TreeVisitor<T, R> visitor,
+                                                   TreeVisitContext<T, R> tvCtx,
+                                                   TreePostVisitor<T, R> postVisitor,
+                                                   TreePostVisitContext<T, R> tpvCtx)
+    {
         /* visit itself */
         tvCtx.setNode(node);
         tvCtx.incStep();
+        R savedDataFromParent = tvCtx.getDataFromParent();
+        int savedDepth = tvCtx.getDepth();
+        int savedStep = tvCtx.getStep();
         TreeVisitIndicator indicator = visitor.visit(node.data, tvCtx);
         if (TreeVisitIndicator.TERMINATE == indicator) {
             return indicator;            /* TERMINATE */
@@ -150,7 +163,7 @@ public class TreeNode<T> {
             while (null != child) {
                 tvCtx.setDataFromParent(dataToChildren);
                 tvCtx.incDepth();
-                TreeVisitIndicator ind = _walk(child, visitor, tvCtx);      /* visit a child */
+                TreeVisitIndicator ind = _walk(child, visitor, tvCtx, postVisitor, tpvCtx);      /* visit a child */
                 tvCtx.decDepth();
                 if (TreeVisitIndicator.TERMINATE == ind) {
                     return ind;                  /* TERMINATE */
@@ -162,7 +175,14 @@ public class TreeNode<T> {
             }
         }
 
-        return indicator;
+        /* post visit */
+        tpvCtx.setNode(node);
+        tpvCtx.setDataFromParent(savedDataFromParent);
+        tpvCtx.setDepth(savedDepth);
+        tpvCtx.setStep(savedStep);
+        TreeVisitIndicator indicator_ = postVisitor.postVisit(node.data, tpvCtx);
+
+        return  (TreeVisitIndicator.AS_PRE_VISIT == indicator_) ? indicator : indicator_;
     }
 
     public TreeNode<T> ascend(int nHierarchy) {
