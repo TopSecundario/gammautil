@@ -111,6 +111,10 @@ public class TreeNode<T> {
         return indicator;
     }
 
+    public <R> TreeVisitIndicator walk(TreeVisitor<T, R> visitor) {
+        return walk(visitor, new TreeVisitContext<>());
+    }
+
     public <R> TreeVisitIndicator walk(TreeVisitor<T, R> visitor, TreeVisitContext<T, R> tvCtx) {
         return walk(visitor, tvCtx, (_data, _tpvCtx) -> {return TreeVisitIndicator.AS_PRE_VISIT;});
     }
