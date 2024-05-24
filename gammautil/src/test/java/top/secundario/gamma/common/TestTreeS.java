@@ -3,7 +3,6 @@ package top.secundario.gamma.common;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -47,5 +46,18 @@ public class TestTreeS {
 
             assertEquals(expectedResult, actualResult);
         }
+    }
+
+    @Test
+    public void test_load() throws IOException {
+        Path pathOrigin = Path.of("src/test/resources/world.txt");
+        TreeNode<String> worldTree = TreeS.load(pathOrigin);
+
+        Path pathNew = Files.createTempFile("world_new.txt", null);
+        TreeS.dump(worldTree, pathNew);
+
+        String newDump = Files.readString(pathNew);
+        String expectedOrigin = Files.readString(pathOrigin);
+        assertEquals(expectedOrigin, newDump);
     }
 }
