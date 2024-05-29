@@ -23,5 +23,16 @@ public class Components {
         }
     }
 
+    public static void printGeometry(JComponent c) {
+        System.out.println("size: " + c.getSize());
+        System.out.println("min size: " + c.getMinimumSize());
+        System.out.println("pref size: " + c.getPreferredSize());
+        System.out.println("max size: " + c.getMaximumSize());
+        System.out.println("location: " + c.getLocation());
+        System.out.println("bounds: " + c.getBounds());
+        System.out.println("insets: " + c.getInsets());
+        System.out.println("border insets: " + (null != c.getBorder() ? c.getBorder().getBorderInsets(c) : null));
+    }
+
     protected Components() {}
 }

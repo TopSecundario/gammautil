@@ -1,11 +1,13 @@
 package top.secundario.gamma.gui;
 
+import top.secundario.gamma.common.ObjectS;
+
 import java.awt.*;
 
 public class Colors {
 
     public static String toHTML(Color color) {
-        return String.format("#%08X", color.getRGB());
+        return  (ObjectS.isNotNull(color)) ? (String.format("#%08X", color.getRGB())) : "null";
     }
 
     public static Color adaptForBgColor(Color bgColor) {

@@ -8,7 +8,7 @@ import java.util.Objects;
 import top.secundario.gamma.common.ObjectS;
 import top.secundario.gamma.common.Strings;
 
-public class PromptLabel extends JPanel {
+public class PromptLabel extends JComponent {
     private String prompt;
     private String content;
 
@@ -45,9 +45,6 @@ public class PromptLabel extends JPanel {
     }
 
     public PromptLabel(String prompt, String content) {
-        this.prompt = prompt;
-        this.content = content;
-
         gap = 5;
         ipad = 2;
         xpad = 2;
@@ -67,7 +64,28 @@ public class PromptLabel extends JPanel {
         bgColorContent = getBackground();
         fgColorContent = getForeground();
 
+        setPrompt(prompt);
+        setContent(content);
+
         setOpaque(false);
+    }
+
+    public void revalidate() {
+        calcGeometry();
+        super.revalidate();
+    }
+
+    public Dimension getPreferredSize() {
+        calcGeometry();
+        return  new Dimension(wInherent, hInherent);
+    }
+
+    public Dimension getMinimumSize() {
+        return getPreferredSize();
+    }
+
+    public Dimension getMaximumSize() {
+        return getPreferredSize();
     }
 
     public String getPrompt() {
@@ -77,6 +95,7 @@ public class PromptLabel extends JPanel {
     public void setPrompt(String prompt) {
         if (! Objects.equals(this.prompt, prompt)) {
             this.prompt = prompt;
+            revalidate();
             repaint();
         }
     }
@@ -88,6 +107,7 @@ public class PromptLabel extends JPanel {
     public void setContent(String content) {
         if (! Objects.equals(this.content, content)) {
             this.content = content;
+            revalidate();
             repaint();
         }
     }
@@ -152,6 +172,7 @@ public class PromptLabel extends JPanel {
 
         if (! this.fontPrompt.equals(fontPrompt)) {
             this.fontPrompt = fontPrompt;
+            revalidate();
             repaint();
         }
     }
@@ -166,26 +187,27 @@ public class PromptLabel extends JPanel {
 
         if (! this.fontContent.equals(fontContent)) {
             this.fontContent = fontContent;
+            revalidate();
             repaint();
         }
     }
 
-    private void calcGeometry(Graphics g) {
+    private void calcGeometry() {
         drawPrompt = false;
-        FontMetrics fmPrompt = g.getFontMetrics(fontPrompt);
+        FontMetrics fmPrompt = (fontPrompt != null) ? getFontMetrics(fontPrompt) : null;
         int hPrompt = 0;
         int wPrompt = 0;
-        if (! Strings.isNullOrEmpty(prompt)) {
+        if ((! Strings.isNullOrEmpty(prompt)) && (null != fmPrompt)) {
             hPrompt = fmPrompt.getHeight();
             wPrompt = fmPrompt.stringWidth(prompt);
             drawPrompt = true;
         }
 
         drawContent = false;
-        FontMetrics fmContent = g.getFontMetrics(fontContent);
+        FontMetrics fmContent = (null != fontContent) ? getFontMetrics(fontContent) : null;
         int hContent = 0;
         int wContent = 0;
-        if (! Strings.isNullOrEmpty(content)) {
+        if ((! Strings.isNullOrEmpty(content)) && (null != fmContent)) {
             hContent = fmContent.getHeight();
             wContent = fmContent.stringWidth(content);
             drawContent = true;
@@ -204,8 +226,8 @@ public class PromptLabel extends JPanel {
         rectPrompt.height = ipad + hPrompt + ipad;
         rectContent.y = yContent - ipad;
         rectContent.height = ipad + hContent + ipad;
-        yPrompt = yPrompt + fmPrompt.getAscent();
-        yContent = yContent + fmContent.getAscent();
+        yPrompt = yPrompt + ((null != fmPrompt) ? fmPrompt.getAscent() : 0);
+        yContent = yContent + ((null != fmContent) ? fmContent.getAscent() : 0);
 
         xPrompt = xpad + ipad;
         xContent = xPrompt + wPrompt + ipad + gap + ipad;
@@ -227,11 +249,6 @@ public class PromptLabel extends JPanel {
             xOffset = 0;
             yOffset = 0;
         }
-
-        Dimension inherentSize = new Dimension(wInherent, hInherent);
-        setPreferredSize(inherentSize);
-        setMinimumSize(inherentSize);
-        setSize(inherentSize);
     }
 
     @Override
@@ -241,8 +258,6 @@ public class PromptLabel extends JPanel {
 
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        calcGeometry(g2);
 
         if (ObjectS.isNotNull(bgColorPrompt)) {
             g2.setColor(bgColorPrompt);
