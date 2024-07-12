@@ -1,0 +1,20 @@
+(struct foo)
+|---byt : 1
+|---h : 0x0002(feature3)
+|---i : 4294967293
+|---l : 0 kHz
+|---obj_bar(struct bar)
+|---|---bh : 0x500
+|---|---bByt : 0x6(6)
+|---aByt_Len : 3
+|---aByt[3]
+|---|---aByt[0] : 0x708
+|---|---aByt[1] : 0x90A
+|---|---aByt[2] : 0xB0C
+|---aObjBars[2]
+|---|---aObjBars[0](struct bar)
+|---|---|---bh : 0x34A2
+|---|---|---bByt : 0x56(86)
+|---|---aObjBars[1](struct bar)
+|---|---|---bh : 0x9078
+|---|---|---bByt : 0xAB(171)
