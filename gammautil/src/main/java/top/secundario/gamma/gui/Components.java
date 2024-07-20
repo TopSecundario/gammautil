@@ -2,6 +2,7 @@ package top.secundario.gamma.gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URL;
 
 public class Components {
 
@@ -10,6 +11,16 @@ public class Components {
         int wx = (scrSize.width - win.getWidth()) / 2;
         int wy = (scrSize.height - win.getHeight()) / 2;
         win.setLocation(wx, wy);
+    }
+
+    public static ImageIcon loadImageIcon(Class<?> clz, String path) {
+        URL url = clz.getResource(path);
+        if (null != url) {
+            return new ImageIcon(url);
+        } else {
+            System.err.println("Failed to load icon: " + path);
+            return null;
+        }
     }
 
     public static Color adaptForBgColor(JComponent c) {
