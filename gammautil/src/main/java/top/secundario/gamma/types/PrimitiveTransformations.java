@@ -116,7 +116,47 @@ public final class PrimitiveTransformations {
     }
 
     public static String intToString(int i, String format) throws TransformationException {
-        return null;
+        integer_format int_fmt = integer_format.parse(format);
+
+        if (! int_fmt.unsigned) {    // signed
+            if ('B' == int_fmt.radixFlag || 'b' == int_fmt.radixFlag) {             // binary
+                String s = Integer.toString(i, 2);
+                s = groupInteger(s, int_fmt.separator);
+                return  "0" + int_fmt.radixFlag + s;
+            } else if ('X' == int_fmt.radixFlag || 'x' == int_fmt.radixFlag) {      // hex with prefix
+                String s = Integer.toString(i, 16);
+                s = ('X' == int_fmt.radixFlag) ? s.toUpperCase() : s.toLowerCase();
+                s = groupInteger(s, int_fmt.separator);
+                return  "0" + int_fmt.radixFlag + s;
+            } else if ('H' == int_fmt.radixFlag || 'h' == int_fmt.radixFlag) {      // hex without prefix
+                String s = Integer.toString(i, 16);
+                s = ('H' == int_fmt.radixFlag) ? s.toUpperCase() : s.toLowerCase();
+                s = groupInteger(s, int_fmt.separator);
+                return s;
+            } else {                                                                // dec
+                String s = Integer.toString(i);
+                return groupInteger(s, int_fmt.separator);
+            }
+        } else {                     // unsigned
+            if ('B' == int_fmt.radixFlag || 'b' == int_fmt.radixFlag) {             // binary
+                String s = Integer.toUnsignedString(i, 2);
+                s = groupInteger(s, int_fmt.separator);
+                return  "0" + int_fmt.radixFlag + s;
+            } else if ('X' == int_fmt.radixFlag || 'x' == int_fmt.radixFlag) {      // hex with prefix
+                String s = Integer.toUnsignedString(i, 16);
+                s = ('X' == int_fmt.radixFlag) ? s.toUpperCase() : s.toLowerCase();
+                s = groupInteger(s, int_fmt.separator);
+                return  "0" + int_fmt.radixFlag + s;
+            } else if ('H' == int_fmt.radixFlag || 'h' == int_fmt.radixFlag) {      // hex without prefix
+                String s = Integer.toUnsignedString(i, 16);
+                s = ('H' == int_fmt.radixFlag) ? s.toUpperCase() : s.toLowerCase();
+                s = groupInteger(s, int_fmt.separator);
+                return s;
+            } else {                                                                // dec
+                String s = Integer.toUnsignedString(i);
+                return groupInteger(s, int_fmt.separator);
+            }
+        }
     }
 
     private PrimitiveTransformations() {}
