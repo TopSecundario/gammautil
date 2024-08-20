@@ -60,22 +60,22 @@ public class PrintStreamLogTransporter extends AbstractLogTransporter {
             case Alert:
             case Critical:
             case Error:
-                out.print("\33[37;41m");
+                out.print("\033[37;41m");
                 out.print(severity);
-                out.print("\33[0m");
+                out.print("\033[0m");
                 return;
 
             case Warning:
             case Notice:
-                out.print("\33[30;43m");
+                out.print("\033[30;43m");
                 out.print(severity);
-                out.print("\33[0m");
+                out.print("\033[0m");
                 return;
 
             case Informational:
-                out.print("\33[30;42m");
+                out.print("\033[30;42m");
                 out.print(severity);
-                out.print("\33[0m");
+                out.print("\033[0m");
                 return;
 
             default:
@@ -89,22 +89,22 @@ public class PrintStreamLogTransporter extends AbstractLogTransporter {
             case Alert:
             case Critical:
             case Error:
-                out.print("\33[31m");
+                out.print("\033[31m");
                 out.print(message);
-                out.print("\33[0m");
+                out.print("\033[0m");
                 return;
 
             case Warning:
             case Notice:
-                out.print("\33[33m");
+                out.print("\033[33m");
                 out.print(message);
-                out.print("\33[0m");
+                out.print("\033[0m");
                 return;
 
             case Informational:
-                out.print("\33[32m");
+                out.print("\033[32m");
                 out.print(message);
-                out.print("\33[0m");
+                out.print("\033[0m");
                 return;
 
             default:
